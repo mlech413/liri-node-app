@@ -21,5 +21,5 @@
 ### node liri.js
 ### followed by either 'my-tweets', 'spotify-this-song', 'movie-this', or 'do-what-it-says' (quotes are NOT neccessary).
 ### A song should be entered after 'spotify-this-song', if that option is used.
-### A movie title should be entered after 'movie this', if that option is used.
+### A movie title should be entered after 'movie-this', if that option is used.
 ### For 'do-what-it-says', the command and input will be read from random.txt. The file should list the command first (such as spotify-this-song, followed by a comma (,) and then the input (such as I Want It That Way) - all on one line. Please view the file to further understand the proper format.
