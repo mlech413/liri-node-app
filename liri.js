@@ -70,9 +70,17 @@ function spotifyThisSong() {
         }
             // display song info from spotify api
             console.log("\nArtist: " + data.tracks.items[0].artists[0].name); 
+            
             console.log("Song: " + data.tracks.items[0].name); 
-            console.log("Preview: " + data.tracks.items[0].external_urls.spotify); 
-            // console.log("Preview: " + data.tracks.items[0].preview_url); 
+            
+            //preview_url is often null or missing, so if it is empty, display the external_url instead:
+            if (!data.tracks.items[0].preview_url || data.tracks.items[0].preview_url.length==0) {
+                console.log("Preview: " + data.tracks.items[0].external_urls.spotify); 
+            }
+            else {
+                console.log("Preview: " + data.tracks.items[0].preview_url);
+            } 
+            
             console.log("Album: " + data.tracks.items[0].album.name); 
 
         });
