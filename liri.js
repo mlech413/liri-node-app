@@ -17,8 +17,7 @@ function readInputs() {
         input += delim + process.argv[i];
         delim = "+";
     };
-    // input [2] is the command that we will use
-    var command = process.argv[2]
+    
     // run the function associated with the proper command 
     switch(command) {
         case "my-tweets":
@@ -59,36 +58,49 @@ function twitter() {
 };
 
 function spotifyThisSong() {
-    // if no song is entered by the user, populate with The Sign by Ace Of Base
-    if (input.length == 0) { 
-        input = "the+sign+ace+of+base";
+    // if no song is entered by the user, populate with The Sign
+    if (!input) { 
+        input = "THE+SIGN";
     };
-    spotify.search({ type: 'track', query: input, limit: 1 }, function(err, data) {
+    spotify.search({ type: 'track', query: input }, function(err, data) {
         // check for errors
-        if (err) {
-            return console.log(err);
+        if (err || data.tracks.items.length == 0) {
+            return console.log("Error: " + err);
         }
-            // display song info from spotify api
-            console.log("\nArtist: " + data.tracks.items[0].artists[0].name); 
-            
-            console.log("Song: " + data.tracks.items[0].name); 
-            
-            //preview_url is often null or missing, so if it is empty, display the external_url instead:
-            if (!data.tracks.items[0].preview_url || data.tracks.items[0].preview_url.length==0) {
-                console.log("Preview: " + data.tracks.items[0].external_urls.spotify); 
-            }
-            else {
-                console.log("Preview: " + data.tracks.items[0].preview_url);
+        //the song title search in this API is NOT very accurate - it often returns multiple (and incorrect) entries - so to fix that, loop through every response and try to match the exact song name:        
+        for ( var i = 0; i < data.tracks.items.length; i++) {
+            songName = data.tracks.items[i].name.split(' ').join('+');
+            songName = songName.toUpperCase();
+            input = input.toUpperCase();
+            //if the exact song name is matched from the object's name array, use it (and end the loop) - otherwise use the first item returned:
+            var songIndex = 0;
+            if (songName == input) {
+                songIndex = i;
+                i = data.tracks.items.length;
             } 
-            
-            console.log("Album: " + data.tracks.items[0].album.name); 
+        }
+        
+        // display all of the song info from spotify api
+        console.log("\nArtist: " + data.tracks.items[songIndex].artists[0].name);
 
-        });
+        console.log("Song: " + data.tracks.items[songIndex].name); 
+        
+        //preview_url is often null or missing, so if it is empty, display the external_url instead:
+        if (!data.tracks.items[songIndex].preview_url || data.tracks.items[songIndex].preview_url.length==0) {
+            console.log("Preview: " + data.tracks.items[songIndex].external_urls.spotify); 
+        }
+        else {
+            console.log("Preview: " + data.tracks.items[songIndex].preview_url);
+        } 
+        
+        console.log("Album: " + data.tracks.items[songIndex].album.name); 
+        
+    });
 };
 
 function omdb() {
     // if no movie is entered by the user, populate with Mr. Nobody
-    if (input.length == 0) {
+    if (!input) {
         input = "Mr.+Nobody";
     };
     // build omdb url
@@ -96,18 +108,23 @@ function omdb() {
     // omdb api
     request(omdbUrl, function(err, response, body) {
         if (!err && response.statusCode === 200) {
-        console.log("Title: " + JSON.parse(body).Title);
-        console.log("Year: " + JSON.parse(body).Year);
-        console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
-        console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value);
-        console.log("Country: " + JSON.parse(body).Country);
-        console.log("Language: " + JSON.parse(body).Language);
-        console.log("Plot: " + JSON.parse(body).Plot);
-        console.log("Actors: " + JSON.parse(body).Actors);
+            if (JSON.parse(body).Title == null){
+                console.log("Error: Movie not found");
+            }
+            else {
+                console.log("Title: " + JSON.parse(body).Title);
+                console.log("Year: " + JSON.parse(body).Year);
+                console.log("IMDB Rating: " + JSON.parse(body).imdbRating);
+                console.log("Rotten Tomatoes Rating: " + JSON.parse(body).Ratings[1].Value);
+                console.log("Country: " + JSON.parse(body).Country);
+                console.log("Language: " + JSON.parse(body).Language);
+                console.log("Plot: " + JSON.parse(body).Plot);
+                console.log("Actors: " + JSON.parse(body).Actors);
+            }
         }
         else {
             console.log("response.statusCode: " + response.statusCode)
-            console.log(err)
+            console.log("Error: " + err)
     }
     });
 };
@@ -132,6 +149,7 @@ function doWhatItSays() {
       });
 };
 
-
-// run the code
+// input [2] is the command that we will use
+var command = process.argv[2]
+// check the inputs and run the rest of the code
 readInputs()
